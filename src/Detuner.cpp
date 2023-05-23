@@ -34,9 +34,10 @@ struct Detuner : Module
     float oldPitch;
     float r1, r2, r3, r4;
     bool stepMode = 0;
-	Detuner() {
-		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);}
 
+	Detuner() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+	}
 
     float randomizza(){
         float r = random::uniform();
@@ -52,16 +53,13 @@ struct Detuner : Module
         return r;
     }
 
-
-
-
 	void process(const ProcessArgs &args) override;
 
     json_t *dataToJson() override {
-    json_t *rootJ = json_object();
-    json_object_set_new(rootJ, "stepMode", json_integer((int) stepMode));
-    json_object_set_new(rootJ, "range", json_integer((int) range));
-    return rootJ;
+		json_t *rootJ = json_object();
+		json_object_set_new(rootJ, "stepMode", json_integer((int) stepMode));
+		json_object_set_new(rootJ, "range", json_integer((int) range));
+		return rootJ;
 	}
 	void dataFromJson(json_t *rootJ) override {
 		json_t *sumJ = json_object_get(rootJ, "stepMode");
@@ -119,91 +117,84 @@ struct DetunerWidget : ModuleWidget
 		addOutput(createOutput<aPJackBlu>(Vec(33, 290.5), module, Detuner::OUTPUT_4));
         
 	}
-	~DetunerWidget(){ 
-	}
+	~DetunerWidget(){}
 	void appendContextMenu(Menu *menu) override;
 };
 
-	struct Range1MenuItem : MenuItem {
-		Detuner *deTuner;
-		void onAction(const event::Action &e) override {
-			deTuner->range = 1;
-		}
+struct Range1MenuItem : MenuItem {
+	Detuner *deTuner;
+	void onAction(const event::Action &e) override {
+		deTuner->range = 1;
+	}
 
-	};
+};
 
-	struct Range2MenuItem : MenuItem {
-		Detuner *deTuner;
-		void onAction(const event::Action &e) override {
-			deTuner->range = 2;
-		}
+struct Range2MenuItem : MenuItem {
+	Detuner *deTuner;
+	void onAction(const event::Action &e) override {
+		deTuner->range = 2;
+	}
 
-	};
+};
 
-	struct SteppedModeMenuItem : MenuItem {
-		Detuner *deTuner;
+struct SteppedModeMenuItem : MenuItem {
+	Detuner *deTuner;
 
-		void onAction(const event::Action &e) override {
+	void onAction(const event::Action &e) override {
+		deTuner->stepMode = !deTuner->stepMode;
+		/*if(module != NULL){
 			deTuner->stepMode = !deTuner->stepMode;
-			if(module != NULL){
-				deTuner->stepMode = !deTuner->stepMode;
-			}
-		}
-		void step() override {
-		if(module != NULL){
+		}*/
+	}
+	void step() override {
+		rightText = (deTuner->stepMode) ? "✔" : "";
+		/*if(module != NULL){
 			rightText = (deTuner->stepMode) ? "✔" : "";
-		}
+		}*/
 		MenuItem::step();
-		}
-	};
+	}
+};
 
-	struct Range0MenuItem : MenuItem {
-		Detuner *deTuner;
-		void onAction(const event::Action &e) override {
-			deTuner->range = 0;
-		}
+struct Range0MenuItem : MenuItem {
+	Detuner *deTuner;
+	void onAction(const event::Action &e) override {
+		deTuner->range = 0;
+	}
 
-	};
+};
 
-	void DetunerWidget::appendContextMenu(Menu *menu) {
+void DetunerWidget::appendContextMenu(Menu *menu) {
 
 	MenuLabel *spacerLabel = new MenuLabel();
 	menu->addChild(spacerLabel);
 	
-	Detuner *deTuner = dynamic_cast<Detuner*>(this->module)
+	Detuner *deTuner = dynamic_cast<Detuner*>(this->module);
 	assert(deTuner);
 
 
-		SteppedModeMenuItem *steppedMenuItem = new SteppedModeMenuItem();
-		steppedMenuItem->text = "Stepped Mode";
-		steppedMenuItem->deTuner = deTuner;
-		menu->addChild(steppedMenuItem);
+	SteppedModeMenuItem *steppedMenuItem = new SteppedModeMenuItem();
+	steppedMenuItem->text = "Stepped Mode";
+	steppedMenuItem->deTuner = deTuner;
+	menu->addChild(steppedMenuItem);
 
-		MenuLabel *spacerLabel2 = new MenuLabel();
-		menu->addChild(spacerLabel2);
+	MenuLabel *spacerLabel2 = new MenuLabel();
+	menu->addChild(spacerLabel2);
 
-		Range0MenuItem *range0MenuItem = new Range0MenuItem();
-		range0MenuItem->text = "Range    ->  -5v / 5v";
-		range0MenuItem->deTuner = deTuner;
-		menu->addChild(range0MenuItem);
-		
-		Range1MenuItem *range1MenuItem = new Range1MenuItem();
-		range1MenuItem->text = "Range    ->  0v / 10v";
-		range1MenuItem->deTuner = deTuner;
-		menu->addChild(range1MenuItem);
-
-		Range2MenuItem *range2MenuItem = new Range2MenuItem();
-		range2MenuItem->text = "Range    ->  -10v / 0v";
-		range2MenuItem->deTuner = deTuner;
-		menu->addChild(range2MenuItem);
-
-	}
-
-
-
-
-
-
+	Range0MenuItem *range0MenuItem = new Range0MenuItem();
+	range0MenuItem->text = "Range    ->  -5v / 5v";
+	range0MenuItem->deTuner = deTuner;
+	menu->addChild(range0MenuItem);
 	
+	Range1MenuItem *range1MenuItem = new Range1MenuItem();
+	range1MenuItem->text = "Range    ->  0v / 10v";
+	range1MenuItem->deTuner = deTuner;
+	menu->addChild(range1MenuItem);
+
+	Range2MenuItem *range2MenuItem = new Range2MenuItem();
+	range2MenuItem->text = "Range    ->  -10v / 0v";
+	range2MenuItem->deTuner = deTuner;
+	menu->addChild(range2MenuItem);
+
+}
 
 Model *modelDetuner = createModel<Detuner, DetunerWidget>("Detuner");
